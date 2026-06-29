@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+langgraph
+langchain
+langchain-groq
+psycopg2-binary
+playwright
+httpx
+python-dotenv
+langgraph-checkpoint-postgres
