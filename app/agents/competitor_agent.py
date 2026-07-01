@@ -4,6 +4,8 @@ from typing import TypedDict
 from dotenv import load_dotenv
 from langgraph.graph import StateGraph, END
 from app.services.llm_reporter import generate_report
+import asyncio
+from app.services.news_fetcher import get_news_mentions
 
 load_dotenv()
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
@@ -52,14 +54,21 @@ async def get_github_releases(repo: str) -> list:
     ]
 
 
-# ---- Node 1: Searcher (now using REAL GitHub data) ----
+# ---- Node 1: Searcher (GitHub + NewsAPI combined) ----
 async def searcher(state: CompetitorState):
     competitor = state["competitor"]
     repo = COMPETITOR_REPOS.get(competitor, "")
     
-    current = await get_github_releases(repo)
+    # fetch both sources simultaneously — not sequentially
+    github_results, news_results = await asyncio.gather(
+        get_github_releases(repo),
+        get_news_mentions(competitor)
+    )
     
-    print(f"[{competitor}] Searcher found: {current}")
+    # combine into one findings list
+    current = github_results + news_results
+    
+    print(f"[{competitor}] Found {len(github_results)} GitHub + {len(news_results)} news items")
     
     return {
         **state,

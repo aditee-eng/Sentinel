@@ -16,13 +16,21 @@ async def generate_report(competitor: str, diffs: list) -> str:
     
     diffs_text = "\n".join(f"- {d}" for d in diffs)
     
-    prompt = f"""You are a competitive intelligence analyst. 
-Write a short, clear report (3-4 sentences max) summarizing what {competitor} has shipped or changed recently, based on this raw data:
+    prompt = f"""You are a competitive intelligence analyst.
+    Below is raw data about {competitor} from multiple sources. Some items may be noise or unrelated packages/projects that share the name — ignore those completely.
 
-{diffs_text}
+    Focus ONLY on meaningful signals about {competitor} the company/product:
+   - New features or product launches
+   - Pricing changes
+   - Major news coverage
+   - Significant community activity
 
-Write it like a smart colleague giving a quick update - direct, no fluff, no corporate language. 
-If there are many version releases, summarize the pattern (e.g. "rapid iteration on X area") rather than listing every single one."""
+   Raw data:
+  {diffs_text}
+
+   Write a 3-4 sentence report summarizing only the genuinely relevant updates. 
+   If everything looks like noise with no real signal, say "No meaningful updates found for {competitor} this week."
+   Write like a smart colleague giving a quick update — direct, no fluff."""
 
     response = await llm.ainvoke(prompt)
     return response.content
