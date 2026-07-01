@@ -6,6 +6,7 @@ from langgraph.graph import StateGraph, END
 from app.services.llm_reporter import generate_report
 import asyncio
 from app.services.news_fetcher import get_news_mentions
+from app.services.playwright_fetcher import get_pricing_data
 
 load_dotenv()
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
@@ -54,21 +55,23 @@ async def get_github_releases(repo: str) -> list:
     ]
 
 
-# ---- Node 1: Searcher (GitHub + NewsAPI combined) ----
+from app.services.playwright_fetcher import get_pricing_data
+
+# ---- Node 1: Searcher (GitHub + NewsAPI + Playwright) ----
 async def searcher(state: CompetitorState):
     competitor = state["competitor"]
     repo = COMPETITOR_REPOS.get(competitor, "")
     
-    # fetch both sources simultaneously — not sequentially
-    github_results, news_results = await asyncio.gather(
+    # fetch ALL three sources simultaneously
+    github_results, news_results, pricing_results = await asyncio.gather(
         get_github_releases(repo),
-        get_news_mentions(competitor)
+        get_news_mentions(competitor),
+        get_pricing_data(competitor)
     )
     
-    # combine into one findings list
-    current = github_results + news_results
+    current = github_results + news_results + pricing_results
     
-    print(f"[{competitor}] Found {len(github_results)} GitHub + {len(news_results)} news items")
+    print(f"[{competitor}] Found {len(github_results)} GitHub + {len(news_results)} news + {len(pricing_results)} pricing items")
     
     return {
         **state,
