@@ -61,3 +61,47 @@ async def get_latest_report(competitor: str):
             "report": state.values.get("report", "No report generated yet."),
             "last_findings_count": len(state.values.get("current_findings", []))
         }
+
+@router.get("/stats")
+async def get_stats():
+    """
+    Returns cross-competitor stats for dashboard visualizations.
+    """
+    graph = build_competitor_graph()
+    stats = []
+
+    async with get_checkpointer() as checkpointer:
+        app = graph.compile(checkpointer=checkpointer)
+
+        for competitor in COMPETITORS:
+            config = {"configurable": {"thread_id": f"sentinel-{competitor}"}}
+            state = await app.aget_state(config)
+
+            if not state.values:
+                stats.append({
+                    "competitor": competitor,
+                    "total_findings": 0,
+                    "news_count": 0,
+                    "pricing_count": 0,
+                    "github_count": 0,
+                    "new_this_run": 0
+                })
+                continue
+
+            findings = state.values.get("current_findings", [])
+            diffs = state.values.get("diffs", [])
+
+            news = [f for f in findings if f.startswith("[news]")]
+            pricing = [f for f in findings if f.startswith("[pricing]")]
+            github = [f for f in findings if not f.startswith("[news]") and not f.startswith("[pricing]")]
+
+            stats.append({
+                "competitor": competitor,
+                "total_findings": len(findings),
+                "news_count": len(news),
+                "pricing_count": len(pricing),
+                "github_count": len(github),
+                "new_this_run": len(diffs)
+            })
+
+    return {"stats": stats}

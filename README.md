@@ -13,6 +13,11 @@ Founders, PMs, and engineers waste hours every week manually checking what compe
 Sentinel automates this end-to-end: give it a list of competitors, and it tells you exactly what's new, with sources and confidence levels, every time you check.
 
 ---
+## Dashboard
+
+![Sentinel Dashboard](dashboard.png)
+
+> Windows 95-inspired UI — because good intelligence tools should be fast and functional, not pretty for the sake of it.
 
 ## Why this isn't "just an LLM wrapper"
 

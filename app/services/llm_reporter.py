@@ -17,20 +17,29 @@ async def generate_report(competitor: str, diffs: list) -> str:
     diffs_text = "\n".join(f"- {d}" for d in diffs)
     
     prompt = f"""You are a competitive intelligence analyst.
-    Below is raw data about {competitor} from multiple sources. Some items may be noise or unrelated packages/projects that share the name — ignore those completely.
+Below is raw data about {competitor} from multiple sources. Some items may be noise — ignore those.
 
-    Focus ONLY on meaningful signals about {competitor} the company/product:
-   - New features or product launches
-   - Pricing changes
-   - Major news coverage
-   - Significant community activity
+Focus ONLY on meaningful signals about {competitor} the company/product:
+- New features or product launches
+- Pricing changes
+- Major news coverage
+- Business developments (IPO, funding, partnerships)
 
-   Raw data:
-  {diffs_text}
+Raw data:
+{diffs_text}
 
-   Write a 3-4 sentence report summarizing only the genuinely relevant updates. 
-   If everything looks like noise with no real signal, say "No meaningful updates found for {competitor} this week."
-   Write like a smart colleague giving a quick update — direct, no fluff."""
+Write EXACTLY 3 bullet points max. Each bullet must be:
+- One punchy line under 15 words
+- Start with a dash (-)
+- No emojis, no paragraphs, no fluff
+- Each bullet on its own line
 
+If everything is noise, respond with exactly:
+- No meaningful updates this week.
+
+Example format:
+- Filed for $600M IPO via confidential route
+- Partnered with BiteSpeed for AI-powered D2C stack
+- SEBI seeks clarification on draft prospectus"""
     response = await llm.ainvoke(prompt)
     return response.content
