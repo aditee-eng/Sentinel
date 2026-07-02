@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import './App.css';
+import StatsPanel from './StatsPanel';
 
 const API_BASE = 'http://localhost:8000/api';
 
@@ -41,14 +42,17 @@ function App() {
   const [progressMsg, setProgressMsg] = useState('');
   const [statusText, setStatusText] = useState('Ready');
   const [statusMode, setStatusMode] = useState('ready');
+  const [stats, setStats] = useState([]);
 
   useEffect(() => {
     fetchAll();
   }, []);
 
-  const fetchAll = async () => {
+ const fetchAll = async () => {
     try {
+      console.log('fetchAll called');
       const res = await axios.get(`${API_BASE}/competitors`);
+      console.log('competitors:', res.data);
       const list = res.data.competitors;
       setCompetitors(list);
 
@@ -60,11 +64,18 @@ function App() {
         })
       );
       setReports(reportMap);
+
+      const statsRes = await axios.get(`${API_BASE}/stats`);
+      setStats(statsRes.data.stats);
+      console.log('fetchAll done');
+
     } catch (err) {
+      console.error('fetchAll error:', err);
       setStatusText('Error loading data');
       setStatusMode('error');
     }
   };
+   
 
   const runSentinel = async () => {
     setRunning(true);
@@ -89,8 +100,6 @@ function App() {
       setProgressMsg('All agents finished. Reports updated.');
       setStatusText('Done');
       setStatusMode('ready');
-
-      // re-fetch latest reports from PostgreSQL after run
       await fetchAll();
     } catch (err) {
       clearInterval(interval);
@@ -107,7 +116,7 @@ function App() {
       <div className="window">
         <div className="titlebar">
           <div className="titlebar-title">
-            <div className="titlebar-icon">S</div>
+            <div class="titlebar-icon">S</div>
             Sentinel v1.0 — Competitive Intelligence System
           </div>
           <div className="titlebar-buttons">
@@ -132,7 +141,7 @@ function App() {
             ▶ Run Sentinel
           </button>
           <div className="divider" />
-          <button className="toolbar-btn" onClick={fetchAll} disabled={running}>
+          <button className="toolbar-btn" onClick={fetchAll}>
             ⟳ Refresh
           </button>
           <div className="divider" />
@@ -158,6 +167,8 @@ function App() {
             </div>
           )}
 
+          <StatsPanel stats={stats} />
+
           <div className="section-label">
             TRACKED COMPETITORS — {competitors.length} ACTIVE
           </div>
@@ -169,15 +180,21 @@ function App() {
                   📁 {c.toUpperCase()}
                 </div>
                 <div className="card-body">
-                  {reports[c]?.report || 'No report yet — click Run Sentinel.'}
+                  {reports[c]?.report
+                    ? reports[c].report.split('\n').filter(l => l.trim()).map((line, i) => (
+                     <div key={i} style={{ marginBottom: 4 }}>
+                       {line.trim()}
+                     </div>
+                    ))
+                  : 'No report yet — click Run Sentinel.'}
                 </div>
                 <div className="card-footer">
-                  <span>
-                    {reports[c]?.last_findings_count
-                      ? `${reports[c].last_findings_count} findings`
-                      : 'No data yet'}
+                 <span>
+                   {stats.find(s => s.competitor === c)?.new_this_run > 0
+                     ? `${stats.find(s => s.competitor === c)?.new_this_run} new this week`
+                     : 'No new updates this week'}
                   </span>
-                  <span>GitHub · News · Pricing</span>
+                 <span>News · Pricing</span>
                 </div>
               </div>
             ))}
