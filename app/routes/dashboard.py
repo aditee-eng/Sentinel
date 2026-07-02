@@ -6,7 +6,7 @@ from app.agents.competitor_agent import build_competitor_graph
 router = APIRouter(prefix="/api")
 
 # hardcoded for now — will make configurable later
-COMPETITORS = ["nextjs", "supabase"]
+COMPETITORS = ["razorpay", "cashfree", "payu"]
 
 
 @router.post("/run")
@@ -44,14 +44,12 @@ async def get_competitors():
 
 @router.get("/reports/{competitor}")
 async def get_latest_report(competitor: str):
-    """
-    Returns the latest saved report for a competitor
-    without triggering a new run.
-    """
     graph = build_competitor_graph()
     
     async with get_checkpointer() as checkpointer:
         app = graph.compile(checkpointer=checkpointer)
+        
+        # must match the thread_id used in orchestrator
         config = {"configurable": {"thread_id": f"sentinel-{competitor}"}}
         state = await app.aget_state(config)
         

@@ -13,11 +13,11 @@ GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
 # ---- Map competitor name to their GitHub repo ----
 # Add more as you go. Leave blank string if no public repo.
+# No GitHub for these — they're fintech companies
 COMPETITOR_REPOS = {
-    "nextjs": "vercel/next.js",
-    "supabase": "supabase/supabase",
-    "zepto": "",       # no public repo - will skip
-    "swiggy": "",      # no public repo - will skip
+    "razorpay": "",
+    "cashfree": "",
+    "payu": ""
 }
 
 
@@ -61,23 +61,24 @@ from app.services.playwright_fetcher import get_pricing_data
 async def searcher(state: CompetitorState):
     competitor = state["competitor"]
     repo = COMPETITOR_REPOS.get(competitor, "")
-    
-    # fetch ALL three sources simultaneously
-    github_results, news_results, pricing_results = await asyncio.gather(
-        get_github_releases(repo),
-        get_news_mentions(competitor),
-        get_pricing_data(competitor)
-    )
-    
+
+    # only fetch GitHub if repo exists
+    tasks = [get_news_mentions(competitor), get_pricing_data(competitor)]
+    if repo:
+        tasks.append(get_github_releases(repo))
+        news_results, pricing_results, github_results = await asyncio.gather(*tasks)
+    else:
+        news_results, pricing_results = await asyncio.gather(*tasks)
+        github_results = []
+
     current = github_results + news_results + pricing_results
-    
+
     print(f"[{competitor}] Found {len(github_results)} GitHub + {len(news_results)} news + {len(pricing_results)} pricing items")
-    
+
     return {
         **state,
         "current_findings": current
     }
-
 
 # ---- Node 2: Diff (same as before, unchanged logic) ----
 def diff_node(state: CompetitorState):

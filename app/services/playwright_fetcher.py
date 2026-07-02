@@ -1,6 +1,9 @@
 from playwright.async_api import async_playwright
 
 PRICING_URLS = {
+    "razorpay": "https://razorpay.com/pricing/",
+    "cashfree": "https://www.cashfree.com/payment-gateway-charges/",
+    "payu": "https://payu.in/pricing",
     "nextjs": "https://vercel.com/pricing",
     "supabase": "https://supabase.com/pricing",
 }

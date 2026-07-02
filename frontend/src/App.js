@@ -72,7 +72,6 @@ function App() {
     setStatusText('Running...');
     setProgress(0);
 
-    // animate progress bar while API call runs
     let step = 0;
     const interval = setInterval(() => {
       if (step < PROGRESS_STEPS.length - 1) {
@@ -84,18 +83,15 @@ function App() {
     }, 700);
 
     try {
-      const res = await axios.post(`${API_BASE}/run`);
+      await axios.post(`${API_BASE}/run`);
       clearInterval(interval);
       setProgress(100);
       setProgressMsg('All agents finished. Reports updated.');
       setStatusText('Done');
       setStatusMode('ready');
 
-      const newReports = {};
-      res.data.reports.forEach((r) => {
-        newReports[r.competitor] = { report: r.report };
-      });
-      setReports(newReports);
+      // re-fetch latest reports from PostgreSQL after run
+      await fetchAll();
     } catch (err) {
       clearInterval(interval);
       setStatusText('Error');

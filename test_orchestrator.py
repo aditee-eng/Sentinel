@@ -7,10 +7,9 @@ async def main():
     app = graph.compile()
 
     result = await app.ainvoke({
-        "competitors": ["nextjs", "supabase"],
-        "all_reports": []
+    "competitors": ["razorpay", "cashfree", "payu"],
+    "all_reports": []
     })
-
     print("\n===== FINAL REPORTS =====")
     
     seen = set()
