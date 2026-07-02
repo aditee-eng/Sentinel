@@ -13,11 +13,6 @@ Founders, PMs, and engineers waste hours every week manually checking what compe
 Sentinel automates this end-to-end: give it a list of competitors, and it tells you exactly what's new, with sources and confidence levels, every time you check.
 
 ---
-## Dashboard
-
-![Sentinel Dashboard](dashboard.png)
-
-> Windows 95-inspired UI — because good intelligence tools should be fast and functional, not pretty for the sake of it.
 
 ## Why this isn't "just an LLM wrapper"
 
@@ -90,22 +85,6 @@ Each competitor agent's state (what it found, what changed, the generated report
 4. **State is loaded and diffed** — LangGraph's checkpointer automatically loads each competitor's previous findings from PostgreSQL, and the agent computes exactly what's new since the last run.
 5. **An LLM writes the digest** — Llama 3.3 70B (via Groq) turns the raw diff into a short, readable summary — not a dump of raw data.
 6. **Everything is persisted** — every run's full state is saved, so historical trends are queryable later.
-
----
-
-## Project status
-
-This project is being built incrementally and documented honestly as it progresses.
-
-- [x] LangGraph state graph for a single competitor agent (search → diff → report)
-- [x] PostgreSQL-backed checkpointing for persistent cross-run memory
-- [x] Real GitHub releases as a working data source
-- [x] LLM-generated natural language reports (Llama 3.3 70B via Groq)
-- [ ] Additional data sources: Reddit, NewsAPI, Playwright-based pricing page diffing
-- [ ] Multi-competitor parallel orchestration (`Send` API)
-- [ ] Source confidence scoring / cross-source validation
-- [ ] FastAPI endpoints serving dashboard data
-- [ ] React dashboard with historical trend view
 
 ---
 
