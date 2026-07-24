@@ -3,7 +3,7 @@ import axios from 'axios';
 import './App.css';
 import StatsPanel from './StatsPanel';
 
-const API_BASE = 'http://localhost:8000/api';
+const API_BASE = `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/api`;
 
 const PROGRESS_STEPS = [
   [10, 'Spawning parallel agents...'],
